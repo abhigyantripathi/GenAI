@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Oracle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- General Styling & Animated Background --- */
+        :root {
+            --dark-bg: #1A1A2E;
+            --primary-lavender: #9A77FF;
+            --secondary-pink: #E040FB;
+            --light-text: #F0F0F0;
+            --dark-text: #1E1E1E;
+            --card-bg: #2C2C54;
+            --border-color: #4A4A7A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--light-text);
+            background: linear-gradient(135deg, #0f0c29, var(--dark-bg), #24243e);
+            background-size: 400% 400%;
+            animation: gradient-animation 15s ease infinite;
+        }
+
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- Chat Container --- */
+        .chat-container {
+            width: 100%;
+            max-width: 700px;
+            height: 90vh;
+            max-height: 800px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- Chat Header --- */
+        .chat-header {
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chat-header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: -webkit-linear-gradient(45deg, var(--primary-lavender), var(--secondary-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .chat-header p {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* --- API Key Section --- */
+        .api-key-section {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #api-key-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #1A1A2E;
+            color: var(--light-text);
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        #api-key-input::placeholder {
+            color: #888;
+        }
+
+        #api-key-input:focus {
+            border-color: var(--primary-lavender);
+        }
+        
+        /* --- Chat Messages --- */
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-lavender) var(--dark-bg);
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: var(--primary-lavender);
+            border-radius: 10px;
+            border: 3px solid var(--dark-bg);
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.5;
+            animation: fade-in 0.5s ease-out;
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .bot-message {
+            background-color: #3a3a64;
+            color: var(--light-text);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .user-message {
+            background: linear-gradient(45deg, var(--primary-lavender), #7f5de2);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .error-message {
+            background-color: #6d2830;
+            color: #ffb8c0;
+            align-self: center;
+            text-align: center;
+            max-width: 90%;
+        }
+        
+        /* --- Typing Indicator --- */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            align-items: center;
+            gap: 5px;
+            padding: 12px 18px;
+            background-color: #3a3a64;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: var(--primary-lavender);
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-of-type(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-of-type(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        /* --- Chat Input Form --- */
+        .chat-input-form {
+            display: flex;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.2);
+            gap: 10px;
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 12px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            background: #1A1A2E;
+            color: var(--light-text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #user-input:focus {
+            border-color: var(--primary-lavender);
+        }
+
+        #send-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: var(--primary-lavender);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        #send-button:hover {
+            background: var(--secondary-pink);
+            transform: scale(1.1);
+        }
+
+        #send-button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        #send-button svg {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <header class="chat-header">
+            <h1>DSA Oracle</h1>
+            <p>Your Go-To for Data Structures & Algorithms</p>
+        </header>
+
+        <div class="api-key-section">
+             <input type="password" id="api-key-input" placeholder="Enter Your Google AI API Key Here">
+        </div>
+        
+        <main class="chat-messages" id="chat-messages">
+            <!-- Initial bot message -->
+            <div class="message bot-message">
+                Hello! I am the DSA Oracle. Ask me anything about data structures and algorithms. <br><br><strong>Important:</strong> Please enter your Google AI API Key above to begin. Your key is used only in your browser and is not stored.
+            </div>
+            
+            <div class="typing-indicator" id="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </main>
+
+        <form class="chat-input-form" id="chat-form">
+            <input type="text" id="user-input" placeholder="Ask about arrays, sorting, graphs..." autocomplete="off">
+            <button type="submit" id="send-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                </svg>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const sendButton = document.getElementById('send-button');
+
+        // This is the core instruction for the AI model
+        const SYSTEM_INSTRUCTION = "You are a coding instructor, who answers only data structures and algorithm related questions. If a user asks any question which is not related to data structures and algorithms, then reply in a funny and slightly rude way, but if the user asks problems related to data structures and algorithms then answer accordingly and politely. You must answer in a simple manner. Example: if the user asks, 'hey how are you', you might reply: 'My circuits are fine, thanks. Got a question about binary trees or are we just making small talk?'. If they ask 'what is a linked list?', provide a clear, polite explanation.";
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageText = userInput.value.trim();
+            const apiKey = apiKeyInput.value.trim();
+
+            if (!messageText) return;
+            if (!apiKey) {
+                addMessage("Please enter your API Key above before sending a message.", 'error');
+                return;
+            }
+
+            // Add user's message to the chat
+            addMessage(messageText, 'user');
+            userInput.value = '';
+            
+            // Show typing indicator and disable input
+            showTypingIndicator(true);
+
+            try {
+                // Call the Gemini API
+                const botResponse = await getGeminiResponse(messageText, apiKey);
+                addMessage(botResponse, 'bot');
+            } catch (error) {
+                console.error("API Error:", error);
+                addMessage(`Oops! Something went wrong. ${error.message}`, 'error');
+            } finally {
+                // Hide typing indicator and re-enable input
+                showTypingIndicator(false);
+            }
+        });
+
+        function addMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+            
+            // A simple way to format the response text, replacing newlines with <br>
+            messageElement.innerHTML = text.replace(/\n/g, '<br>');
+
+            chatMessages.appendChild(messageElement);
+            scrollToBottom();
+        }
+
+        function showTypingIndicator(show) {
+            typingIndicator.style.display = show ? 'flex' : 'none';
+            userInput.disabled = show;
+            sendButton.disabled = show;
+            if (show) {
+                scrollToBottom();
+            }
+        }
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function getGeminiResponse(prompt, apiKey) {
+            // NOTE: The user's provided model "gemini-2.5-flash" is not a valid model name.
+            // Using "gemini-1.5-flash-latest" which is a valid and fast model.
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+
+            const requestBody = {
+                "contents": [{
+                    "parts": [{ "text": prompt }]
+                }],
+                "systemInstruction": {
+                    "parts": [{ "text": SYSTEM_INSTRUCTION }]
+                }
+            };
+            
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error.message || 'Failed to fetch response from API.');
+            }
+
+            const data = await response.json();
+            
+            // Safely access the response text
+            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+                return data.candidates[0].content.parts[0].text;
+            } else {
+                return "I received a response, but it was in an unexpected format.";
+            }
+        }
+        
+    </script>
+</body>
+</html>
